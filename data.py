@@ -22,17 +22,18 @@ def commit_and_push(branch_name, commit_message):
     else:
         print(f"No changes to commit in '{branch_name}'")
 
-def pull_and_push_to_staging(src_branch, dest_branch):
+def pull_from_testing_and_push_to_staging(src_branch, dest_branch):
     repo = git.Repo('.')
 
-    # Fetch changes from the remote repository
+    # Change to the staging branch
     try:
-        repo.git.fetch()
+        repo.git.checkout(dest_branch)
+        print(f"Changed to branch '{dest_branch}'")
     except git.GitCommandError as e:
-        print(f"Error fetching changes: {e}")
+        print(f"Error changing to branch '{dest_branch}': {e}")
         return
 
-    # Pull changes from testing branch to local staging branch
+    # Pull changes from testing remote branch to local staging branch
     try:
         repo.git.pull('origin', src_branch)
         print(f"Pulled changes from '{src_branch}' to '{dest_branch}'")
@@ -50,4 +51,4 @@ def pull_and_push_to_staging(src_branch, dest_branch):
 if __name__ == "__main__":
     # Replace 'testing', 'staging' with your branch names
     commit_and_push('testing', 'Your commit message for testing changes')
-    pull_and_push_to_staging('testing', 'staging')
+    pull_from_testing_and_push_to_staging('testing', 'staging')
