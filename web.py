@@ -52,7 +52,14 @@ def push_and_merge_pull_request(src_branch, dest_branch, title, body):
     commit_message = "Your commit message for testing changes"
     commit_and_push(src_branch, commit_message)
 
-    # Create a pull request or get the existing one
+    # Push changes to the remote testing branch
+    try:
+        repo.git.push('origin', src_branch)
+        print(f"Pushed changes to '{src_branch}'")
+    except git.GitCommandError as e:
+        print(f"Error pushing changes to '{src_branch}': {e}")
+
+    # Create a pull request or get the existing one from the remote "testing" to the remote "staging"
     github_token = get_github_token()
     g = Github(github_token)
     github_repo = g.get_repo('yashsenzcraft17/automation')  # Replace with your actual repository information
@@ -75,24 +82,15 @@ def push_and_merge_pull_request(src_branch, dest_branch, title, body):
     # Print the status to check the changes in the local testing branch
     print(repo.git.status())
 
-    # Push changes to the remote testing branch
+    # Merge the pull request
+    merge_pull_request(pull_request)
+
+    # Push changes to the remote testing branch (optional, depending on your workflow)
     try:
         repo.git.push('origin', src_branch)
         print(f"Pushed changes to '{src_branch}'")
     except git.GitCommandError as e:
         print(f"Error pushing changes to '{src_branch}': {e}")
-
-    # Merge the pull request
-    merge_pull_request(pull_request)
-
-    # Push changes to both source and destination branches
-    try:
-        repo.git.push('origin', src_branch)
-        print(f"Pushed changes to '{src_branch}'")
-        repo.git.push('origin', dest_branch)
-        print(f"Pushed changes to '{dest_branch}'")
-    except git.GitCommandError as e:
-        print(f"Error pushing changes: {e}")
 
 if __name__ == "__main__":
     # Replace 'testing', 'staging' with your branch names
