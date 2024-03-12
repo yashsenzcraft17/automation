@@ -25,12 +25,19 @@ def commit_and_push(branch_name, commit_message):
 def pull_and_push_to_staging(src_branch, dest_branch):
     repo = git.Repo('.')
 
-    # Pull changes from testing remote branch to local staging branch
+    # Fetch changes from the remote repository
     try:
-        repo.git.pull('testing', src_branch)
-        print(f"Pulled changes from 'testing' to '{src_branch}'")
+        repo.git.fetch()
     except git.GitCommandError as e:
-        print(f"Error pulling changes from 'testing' to '{src_branch}': {e}")
+        print(f"Error fetching changes: {e}")
+        return
+
+    # Pull changes from testing branch to local staging branch
+    try:
+        repo.git.pull('origin', src_branch)
+        print(f"Pulled changes from '{src_branch}' to '{dest_branch}'")
+    except git.GitCommandError as e:
+        print(f"Error pulling changes from '{src_branch}' to '{dest_branch}': {e}")
         return
 
     # Push changes to the staging remote branch
