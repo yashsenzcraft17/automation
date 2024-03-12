@@ -52,6 +52,7 @@ def merge_pull_request(pull_request):
     except Exception as e:
         print(f"Error merging pull request: {e}")
 
+
 def push_and_merge_pull_request(src_branch, dest_branch, title, body):
     repo = git.Repo('.')
 
@@ -74,7 +75,12 @@ def push_and_merge_pull_request(src_branch, dest_branch, title, body):
 
     if existing_pull_request:
         print(f"An existing pull request already exists: {existing_pull_request.html_url}")
+
+        # You can choose to close the existing pull request and skip creating a new one
         close_pull_request(existing_pull_request)
+        return
+    else:
+        print("No existing pull request found.")
 
     # Create a new pull request
     pull_request = github_repo.create_pull(
