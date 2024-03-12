@@ -33,15 +33,29 @@ def commit_and_push(branch_name, commit_message):
 def create_and_checkout_branch(branch_name):
     repo = git.Repo('.')
 
-    # Fetch branch from remote
-    repo.git.fetch('origin', branch_name)
+    # Check if the branch exists locally
+    local_branch = next((b for b in repo.branches if b.name == branch_name), None)
 
-    # Create and checkout the branch
-    try:
-        repo.git.checkout('-b', branch_name, f'origin/{branch_name}')
-        print(f"Checked out and created branch '{branch_name}'")
-    except git.GitCommandError as e:
-        print(f"Error creating and checking out branch '{branch_name}': {e}")
+    if local_branch:
+        # If the branch exists, checkout and pull the latest changes
+        repo.git.checkout(branch_name)
+        print(f"Checked out existing branch '{branch_name}'")
+
+        try:
+            repo.git.pull('origin', branch_name)
+            print(f"Pulled latest changes from '{branch_name}'")
+        except git.GitCommandError as e:
+            print(f"Error pulling changes from '{branch_name}': {e}")
+    else:
+        # If the branch doesn't exist, fetch from remote and create
+        repo.git.fetch('origin', branch_name)
+
+        try:
+            repo.git.checkout('-b', branch_name, f'origin/{branch_name}')
+            print(f"Checked out and created branch '{branch_name}'")
+        except git.GitCommandError as e:
+            print(f"Error creating and checking out branch '{branch_name}': {e}")
+
 
 def create_pull_request(repo, src_branch, dest_branch, title, body):
     try:
