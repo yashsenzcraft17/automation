@@ -30,21 +30,12 @@ def commit_and_push(branch_name, commit_message):
     else:
         print(f"No changes to commit in '{branch_name}'")
 
-def create_pull_request(repo, src_branch, dest_branch, title, body):
+def get_existing_pull_request(repo, src_branch, dest_branch):
     try:
-        base = repo.get_branch(dest_branch)
-        head = repo.get_branch(src_branch)
-        pull_request = repo.create_pull(
-            title=title,
-            body=body,
-            base=base.name,
-            head=head.name,
-            draft=False
-        )
-        print(f"Pull request created: {pull_request.html_url}")
-        return pull_request
+        pull_requests = repo.get_pulls(state='open', head=f'yashsenzcraft17:{src_branch}', base=f'yashsenzcraft17:{dest_branch}')
+        return pull_requests[0] if pull_requests else None
     except Exception as e:
-        print(f"Error creating pull request: {e}")
+        print(f"Error retrieving existing pull request: {e}")
         return None
 
 def merge_pull_request(pull_request):
@@ -61,34 +52,47 @@ def push_and_merge_pull_request(src_branch, dest_branch, title, body):
     commit_message = "Your commit message for testing changes"
     commit_and_push(src_branch, commit_message)
 
-    # Create a pull request
+    # Create a pull request or get the existing one
     github_token = get_github_token()
     g = Github(github_token)
     github_repo = g.get_repo('yashsenzcraft17/automation')  # Replace with your actual repository information
-    pull_request = create_pull_request(github_repo, src_branch, dest_branch, title, body)
+    existing_pull_request = get_existing_pull_request(github_repo, src_branch, dest_branch)
 
-    if pull_request:
-        # Print the status to check the changes in the local testing branch
-        print(repo.git.status())
+    if existing_pull_request:
+        print(f"Using existing pull request: {existing_pull_request.html_url}")
+        pull_request = existing_pull_request
+    else:
+        # Create a new pull request
+        pull_request = github_repo.create_pull(
+            title=title,
+            body=body,
+            base=dest_branch,
+            head=src_branch,
+            draft=False
+        )
+        print(f"Pull request created: {pull_request.html_url}")
 
-        # Push changes to the remote testing branch
-        try:
-            repo.git.push('origin', src_branch)
-            print(f"Pushed changes to '{src_branch}'")
-        except git.GitCommandError as e:
-            print(f"Error pushing changes to '{src_branch}': {e}")
+    # Print the status to check the changes in the local testing branch
+    print(repo.git.status())
 
-        # Merge the pull request
-        merge_pull_request(pull_request)
+    # Push changes to the remote testing branch
+    try:
+        repo.git.push('origin', src_branch)
+        print(f"Pushed changes to '{src_branch}'")
+    except git.GitCommandError as e:
+        print(f"Error pushing changes to '{src_branch}': {e}")
 
-        # Push changes to both source and destination branches
-        try:
-            repo.git.push('origin', src_branch)
-            print(f"Pushed changes to '{src_branch}'")
-            repo.git.push('origin', dest_branch)
-            print(f"Pushed changes to '{dest_branch}'")
-        except git.GitCommandError as e:
-            print(f"Error pushing changes: {e}")
+    # Merge the pull request
+    merge_pull_request(pull_request)
+
+    # Push changes to both source and destination branches
+    try:
+        repo.git.push('origin', src_branch)
+        print(f"Pushed changes to '{src_branch}'")
+        repo.git.push('origin', dest_branch)
+        print(f"Pushed changes to '{dest_branch}'")
+    except git.GitCommandError as e:
+        print(f"Error pushing changes: {e}")
 
 if __name__ == "__main__":
     # Replace 'testing', 'staging' with your branch names
