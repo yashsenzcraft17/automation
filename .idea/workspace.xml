@@ -5,6 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e324c518-9a59-40ed-877f-64c4725e1642" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/saveside.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/sending_back.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/web.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/test.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -32,6 +36,7 @@
 }</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\yashv\Downloads\gitproject" />
       <recent name="C:\Users\yashv\Downloads\git" />
     </key>
   </component>
