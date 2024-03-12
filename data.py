@@ -42,5 +42,5 @@ def pull_and_push_to_staging(src_branch, dest_branch):
 
 if __name__ == "__main__":
     # Replace 'testing', 'staging' with your branch names
-    commit_and_push('origin', 'Your commit message for testing changes')
+    commit_and_push('testing', 'Your commit message for testing changes')
     pull_and_push_to_staging('testing', 'staging')
