@@ -68,20 +68,27 @@ def push_and_merge_pull_request(src_branch, dest_branch, title, body):
     pull_request = create_pull_request(github_repo, src_branch, dest_branch, title, body)
 
     if pull_request:
+        # Print the status to check the changes in the local testing branch
+        print(repo.git.status())
+
+        # Push changes to the remote testing branch
+        try:
+            repo.git.push('origin', src_branch)
+            print(f"Pushed changes to '{src_branch}'")
+        except git.GitCommandError as e:
+            print(f"Error pushing changes to '{src_branch}': {e}")
+
         # Merge the pull request
         merge_pull_request(pull_request)
 
-    # Print the status to check the changes in the local staging branch
-    print(repo.git.status())
-
-    # Push changes to both source and destination branches
-    try:
-        repo.git.push('origin', src_branch)
-        print(f"Pushed changes to '{src_branch}'")
-        repo.git.push('origin', dest_branch)
-        print(f"Pushed changes to '{dest_branch}'")
-    except git.GitCommandError as e:
-        print(f"Error pushing changes: {e}")
+        # Push changes to both source and destination branches
+        try:
+            repo.git.push('origin', src_branch)
+            print(f"Pushed changes to '{src_branch}'")
+            repo.git.push('origin', dest_branch)
+            print(f"Pushed changes to '{dest_branch}'")
+        except git.GitCommandError as e:
+            print(f"Error pushing changes: {e}")
 
 if __name__ == "__main__":
     # Replace 'testing', 'staging' with your branch names
