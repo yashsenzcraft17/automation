@@ -38,6 +38,13 @@ def get_existing_pull_request(repo, src_branch, dest_branch):
         print(f"Error retrieving existing pull request: {e}")
         return None
 
+def close_pull_request(pull_request):
+    try:
+        pull_request.edit(state='closed')
+        print(f"Closed existing pull request: {pull_request.html_url}")
+    except Exception as e:
+        print(f"Error closing pull request: {e}")
+
 def merge_pull_request(pull_request):
     try:
         pull_request.merge()
@@ -67,7 +74,8 @@ def push_and_merge_pull_request(src_branch, dest_branch, title, body):
 
     if existing_pull_request:
         print(f"Using existing pull request: {existing_pull_request.html_url}")
-        pull_request = existing_pull_request
+        # Optionally close the existing pull request
+        close_pull_request(existing_pull_request)
     else:
         # Create a new pull request
         pull_request = github_repo.create_pull(
