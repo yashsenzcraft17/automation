@@ -113,4 +113,4 @@ def push_and_merge_pull_request(src_branch, dest_branch, title, body):
 
 if __name__ == "__main__":
     # Replace 'dev', 'staging' with your branch names
-    push_and_merge_pull_request('dev', 'prod', 'testing', 'testing')
+    push_and_merge_pull_request('testing', 'staging', 'testing', 'testing')
