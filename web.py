@@ -73,19 +73,18 @@ def push_and_merge_pull_request(src_branch, dest_branch, title, body):
     existing_pull_request = get_existing_pull_request(github_repo, src_branch, dest_branch)
 
     if existing_pull_request:
-        print(f"Using existing pull request: {existing_pull_request.html_url}")
-        # Optionally close the existing pull request
+        print(f"An existing pull request already exists: {existing_pull_request.html_url}")
         close_pull_request(existing_pull_request)
-    else:
-        # Create a new pull request
-        pull_request = github_repo.create_pull(
-            title=title,
-            body=body,
-            base=dest_branch,
-            head=src_branch,
-            draft=False
-        )
-        print(f"Pull request created: {pull_request.html_url}")
+
+    # Create a new pull request
+    pull_request = github_repo.create_pull(
+        title=title,
+        body=body,
+        base=dest_branch,
+        head=src_branch,
+        draft=False
+    )
+    print(f"Pull request created: {pull_request.html_url}")
 
     # Print the status to check the changes in the local testing branch
     print(repo.git.status())
