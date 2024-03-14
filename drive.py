@@ -1,54 +1,57 @@
 import os
-import io
-from googleapiclient.http import MediaIoBaseDownload
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
-from googleapiclient.discovery import build
-from google.auth.transport.requests import Request
+import git
 
-# Google Drive API credentials
-CLIENT_ID = r'C:\Users\yashv\Downloads\client_secret_51487583740-9jn81d4oeulbvd169uqhggjcdecmq0ba.apps.googleusercontent.com.json'
-SCOPES = ['https://www.googleapis.com/auth/drive']
+def commit_and_push(branch_name, commit_message):
+    repo = git.Repo('.')
 
-# Authentication
-creds = None
-token_path = 'token.json'
-if os.path.exists(token_path):
-    creds = Credentials.from_authorized_user_file(token_path)
+    # Check if there are changes to commit
+    if repo.is_dirty(untracked_files=True):
+        # Add all changes (including modifications and additions)
+        repo.git.add('--all')
 
-if not creds or not creds.valid:
-    if creds and creds.expired and creds.refresh_token:
-        creds.refresh(Request())
+        # Commit changes
+        repo.git.commit('-m', commit_message)
+        print(f"Committed changes in '{branch_name}' with message: {commit_message}")
+
+        # Push changes to the remote repository
+        try:
+            repo.git.push('origin', branch_name)
+            print(f"Pushed changes to '{branch_name}'")
+        except git.GitCommandError as e:
+            print(f"Error pushing changes to '{branch_name}': {e}")
     else:
-        flow = InstalledAppFlow.from_client_secrets_file(CLIENT_ID, SCOPES)
-        creds = flow.run_local_server(port=0)
-    with open(token_path, 'w') as token:
-        token.write(creds.to_json())
+        print(f"No changes to commit in '{branch_name}'")
 
-# Google Drive service
-drive_service = build('drive', 'v3', credentials=creds)
+def pull_from_testing_and_push_to_staging(src_branch, dest_branch):
+    repo = git.Repo('.')
 
-# Search for WhatsApp backup files
-query = "mimeType='application/octet-stream' and name contains 'msgstore.db.crypt'"
-results = drive_service.files().list(q=query).execute()
-files = results.get('files', [])
-
-# Download the first file (assuming there is one)
-if files:
-    file_id = files[0]['id']
+    # Change to the staging branch
     try:
-        request = drive_service.files().get_media(fileId=file_id)
-        fh = io.FileIO('downloaded_backup.db.crypt', 'wb')
-        downloader = MediaIoBaseDownload(fh, request)
-        done = False
-        while done is False:
-            status, done = downloader.next_chunk()
-            print(f"Download Status: {status.progress() * 100:.2f}%")
+        repo.git.checkout(dest_branch)
+        print(f"Changed to branch '{dest_branch}'")
+    except git.GitCommandError as e:
+        print(f"Error changing to branch '{dest_branch}': {e}")
+        return
 
-    except Exception as e:
-        print(f"An error occurred: {e}")
+    # Pull changes from testing remote branch to local staging branch
+    try:
+        repo.git.pull('origin', src_branch)
+        print(f"Pulled changes from '{src_branch}' to '{dest_branch}'")
+    except git.GitCommandError as e:
+        if 'CONFLICT' in str(e):
+            print(f"Merge conflict in '{dest_branch}'. Resolve conflicts manually.")
+        else:
+            print(f"Error pulling changes from '{src_branch}' to '{dest_branch}': {e}")
+        return
 
-    finally:
-        fh.close()
+    # Push changes to the staging remote branch
+    try:
+        repo.git.push('origin', dest_branch)
+        print(f"Pushed changes to '{dest_branch}'")
+    except git.GitCommandError as e:
+        print(f"Error pushing changes to '{dest_branch}': {e}")
 
-print("Download Complete!")
+if __name__ == "__main__":
+    # Replace 'testing', 'staging' with your branch names
+    commit_and_push('testing', 'Your commit message for testing changes')
+    pull_from_testing_and_push_to_staging('testing', 'staging')
